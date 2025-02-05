@@ -105,13 +105,13 @@ usertrap(void)
 //      usertrapret();
 //    }
 
-    if(p->alarm_req) {
+    if(p->alarm_req && !p->alarm_active) {
 //    p->ticks_cnt++;
 
     if (++p->ticks_cnt == p->alarm_ticks)
     {
       //p->alarm_left--;
-//      p->ticks_cnt = 0;
+      p->ticks_cnt = 0;
   
 //      if (p->alarm_left == 0)
 //      {

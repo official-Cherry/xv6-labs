@@ -267,8 +267,8 @@ sigreturn(void)
 //  *(p->trapframe) = p->saved_trapframe;
   p->ticks_cnt = 0;
 //  p->alarm_active = 0;
-  return 0;
-//  return p->trapframe->a0;
+//  return 0;
+  return p->trapframe->a0;
 }
 
 // Free a process's page table, and free the

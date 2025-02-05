@@ -104,6 +104,17 @@ sys_sigalarm(void)
   // get args from user - argraw checks for case
   argint(0, &ticks);
   argaddr(1,&handler);
+  
+  // handle disabling the alarm
+  if(ticks == 0 && handler == 0)
+  {
+      myproc()->alarm_req=0;
+      myproc()->alarm_active=0;
+      myproc()->alarm_ticks=0;
+      myproc()->ticks_cnt=0;
+      myproc()->alarm_handler=0;
+      return 0;
+  }
 
   // call alarm
   sigalarm(ticks, handler);

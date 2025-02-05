@@ -80,6 +80,7 @@ int             pipewrite(struct pipe*, uint64, int);
 int            printf(char*, ...) __attribute__ ((format (printf, 1, 2)));
 void            panic(char*) __attribute__((noreturn));
 void            printfinit(void);
+int             backtrace(void); // * labs4 - #2
 
 // proc.c
 int             cpuid(void);
@@ -106,6 +107,10 @@ void            yield(void);
 int             either_copyout(int user_dst, uint64 dst, void *src, uint64 len);
 int             either_copyin(void *dst, int user_src, uint64 src, uint64 len);
 void            procdump(void);
+int             sigalarm(int ticks, uint64 handler); // * labs4 - #3
+int             sigreturn(void);                     // * labs4 - #3
+void            save_trapframe(struct proc *p);      // * labs4 - #3
+void            restore_trapframe(struct proc *p);   // * labs4 - #3
 
 // swtch.S
 void            swtch(struct context*, struct context*);

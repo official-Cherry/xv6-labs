@@ -195,9 +195,6 @@ UPROGS=\
 	$U/_wc\
 	$U/_zombie\
 
-
-
-
 ifeq ($(LAB),syscall)
 UPROGS += \
 	$U/_attack\
@@ -213,7 +210,8 @@ endif
 ifeq ($(LAB),traps)
 UPROGS += \
 	$U/_call\
-	$U/_bttest
+	$U/_bttest\
+  $U/_alarmtest
 endif
 
 ifeq ($(LAB),lazy)

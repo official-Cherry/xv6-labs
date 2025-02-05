@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "syscall.h" // * labs4 - #3
 
 struct spinlock tickslock;
 uint ticks;
@@ -15,6 +16,8 @@ extern char trampoline[], uservec[], userret[];
 void kernelvec();
 
 extern int devintr();
+
+// * C code to handle and return from traps and interrupts
 
 void
 trapinit(void)
@@ -32,6 +35,8 @@ trapinithart(void)
 //
 // handle an interrupt, exception, or system call from user space.
 // called from trampoline.S
+// * trampoline.s (uservec) -> trap.c (usertrap) 
+// * -> [when returning] trap.c (usertrapret) -> trampoline.s (userret)
 //
 void
 usertrap(void)
@@ -63,8 +68,19 @@ usertrap(void)
     // an interrupt will change sepc, scause, and sstatus,
     // so enable only now that we're done with those registers.
     intr_on();
-
+    
+    // * labs4 - #3
+    // capture system call number
+    uint64 syscall_num = p->trapframe->a7;
     syscall();
+
+    // * if sigreturn is called, restore saved a0 value
+    if (syscall_num == SYS_sigreturn)
+    {
+        p->trapframe->a0 = p->saved_trapframe.a0;
+//        sigreturn();
+    }
+
   } else if((which_dev = devintr()) != 0){
     // ok
   } else {
@@ -77,8 +93,48 @@ usertrap(void)
     exit(-1);
 
   // give up the CPU if this is a timer interrupt.
+  // * labs4 - #3
   if(which_dev == 2)
+  {
+//    if(p->alarm_active)
+//        return;
+//    if(p->alarm_handler == 0 || p->alarm_ticks == 0)
+//    {
+//      yield();
+//      return;
+//      usertrapret();
+//    }
+
+    if(p->alarm_req) {
+//    p->ticks_cnt++;
+
+    if (++p->ticks_cnt == p->alarm_ticks)
+    {
+      //p->alarm_left--;
+//      p->ticks_cnt = 0;
+  
+//      if (p->alarm_left == 0)
+//      {
+//        p->alarm_active = 1; // flag to prevent re_enter
+        // save current state, and prepare for handler execution
+//        save_trapframe(p);
+
+//        if(!(p->alarm_active))
+//        {
+            p->alarm_active = 1;
+//            printf("Saving trapframe: epc=0x%lx sp=0x%lx\n", p->trapframe->epc, p->trapframe->sp);
+//            p->prev_a0 = p->trapframe->a0;
+            memmove(&p->saved_trapframe, p->trapframe, sizeof(struct trapframe));
+//        p->saved_trapframe = *(p->trapframe);
+//            p->alarm_active = 0;
+//            p->prev_a0 = p->trapframe->a0;
+            p->trapframe->epc = (uint64)p->alarm_handler; // jump to handler
+//        p->alarm_left = p->alarm_ticks;        // reset ticks
+//        }
+      }
+    }
     yield();
+  }
 
   usertrapret();
 }

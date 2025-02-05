@@ -176,3 +176,55 @@ printfinit(void)
   initlock(&pr.lock, "pr");
   pr.locking = 1;
 }
+
+// * labs4 - #2
+int
+backtrace(void)
+{
+  // 1 - read frame pointer
+  uint64 fp = r_fp();
+  const uint64 pg = PGROUNDDOWN(fp);
+
+  // 2 - start backtrace output
+  printf("backtrace:\n");
+
+  // 3 - traverse stack frame (loop)
+  while(fp)
+  {
+   // stack end condition
+   if(PGROUNDDOWN(fp) != pg)
+   {
+       break;
+   }
+
+  // 4  - print return address from each stack frame
+  uint64 ra = *(uint64*)(fp - 8); // return address lives at a fixed offset (-8)
+  printf("%p\n", (void*) ra);
+
+  // 5 - move to next frame
+  fp = *(uint64*)(fp - 16);
+  
+  }
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

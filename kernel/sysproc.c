@@ -48,12 +48,14 @@ sys_sbrk(void)
   return addr;
 }
 
+// * labs4 - #2
 uint64
 sys_sleep(void)
 {
   int n;
   uint ticks0;
 
+  backtrace();
   argint(0, &n);
   if(n < 0)
     n = 0;
@@ -91,3 +93,29 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// * labs4 - #3
+uint64
+sys_sigalarm(void)
+{
+  int ticks;
+  uint64 handler;
+
+  // get args from user - argraw checks for case
+  argint(0, &ticks);
+  argaddr(1,&handler);
+
+  // call alarm
+  sigalarm(ticks, handler);
+  return 0;
+}
+
+// * labs4 - #3
+uint64
+sys_sigreturn(void)
+{
+  sigreturn();
+  return 0;
+}
+
+

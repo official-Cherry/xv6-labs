@@ -146,6 +146,16 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  // * labs4 - #3 
+  // Set up alarm fields
+  p->alarm_req = 0;
+  p->alarm_ticks = 0;     // alarm unit(period)
+//  p->alarm_left = 0;      // left ticks
+  p->ticks_cnt = 0;
+  p->alarm_handler = 0;   // handler
+  p->alarm_active = 0;    // active=1 or not=0
+  memset(&p->saved_trapframe, 0, sizeof(p->saved_trapframe)); // initialize trapframe
+
   return p;
 }
 
@@ -203,6 +213,62 @@ proc_pagetable(struct proc *p)
   }
 
   return pagetable;
+}
+
+// * labs4 - #3
+void
+save_trapframe(struct proc *p)
+{
+  p->saved_trapframe = *(p->trapframe);
+}
+
+// * labs4 - #3
+void
+restore_trapframe(struct proc *p)
+{
+  *(p->trapframe) = p->saved_trapframe;
+}
+
+// * labs4 - #3
+int
+sigalarm(int ticks, uint64 handler)
+{
+  struct proc *p = myproc();
+
+//  if(ticks == 0 && handler == 0)
+//  {   
+//      p->alarm_req = 0;
+//      p->alarm_ticks = 0;
+//      p->ticks_cnt = 0;
+//      p->alarm_active = 0;
+//      p->alarm_handler = 0;
+//      memset(&p->saved_trapframe, 0, sizeof(p->saved_trapframe));
+//      return 0;
+//  }
+  p->alarm_req = 1;
+  p->alarm_ticks = ticks;
+//  p->alarm_left = ticks;
+  p->ticks_cnt = 0;
+  p->alarm_handler = handler;
+  p->alarm_active = 0;
+  memset(&p->saved_trapframe, 0, sizeof(p->saved_trapframe));
+  return 0;
+}
+
+// * labs4 - #3
+int
+sigreturn(void)
+{
+  struct proc *p = myproc();
+  p->alarm_active = 0;
+//  restore_trapframe(p); 
+//  printf("Restoring trapframe: epc=0x%lx sp=0x%lx\n", p->saved_trapframe.epc, p->saved_trapframe.sp);
+  memmove(p->trapframe, &p->saved_trapframe, sizeof(struct trapframe));
+//  *(p->trapframe) = p->saved_trapframe;
+  p->ticks_cnt = 0;
+//  p->alarm_active = 0;
+  return 0;
+//  return p->trapframe->a0;
 }
 
 // Free a process's page table, and free the

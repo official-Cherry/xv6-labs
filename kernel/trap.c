@@ -70,7 +70,7 @@ usertrap(void)
     intr_on();
     
     // * labs4 - #3
-    // capture system call number
+    // capture system call number which is called by user
     uint64 syscall_num = p->trapframe->a7;
     syscall();
 
@@ -78,7 +78,6 @@ usertrap(void)
     if (syscall_num == SYS_sigreturn)
     {
         p->trapframe->a0 = p->saved_trapframe.a0;
-//        sigreturn();
     }
 
   } else if((which_dev = devintr()) != 0){
@@ -96,47 +95,19 @@ usertrap(void)
   // * labs4 - #3
   if(which_dev == 2)
   {
-//    if(p->alarm_active)
-//        return;
-//    if(p->alarm_handler == 0 || p->alarm_ticks == 0)
-//    {
-//      yield();
-//      return;
-//      usertrapret();
-//    }
-
-    if(p->alarm_req && !p->alarm_active) {
-//    p->ticks_cnt++;
-
-    if (++p->ticks_cnt == p->alarm_ticks)
+    if(p->alarm_req && !p->alarm_active) // alarm is requried && not in execution 
     {
-      //p->alarm_left--;
-      p->ticks_cnt = 0;
-  
-//      if (p->alarm_left == 0)
-//      {
-//        p->alarm_active = 1; // flag to prevent re_enter
-        // save current state, and prepare for handler execution
-//        save_trapframe(p);
-
-//        if(!(p->alarm_active))
-//        {
-            p->alarm_active = 1;
-//            printf("Saving trapframe: epc=0x%lx sp=0x%lx\n", p->trapframe->epc, p->trapframe->sp);
-//            p->prev_a0 = p->trapframe->a0;
-            memmove(&p->saved_trapframe, p->trapframe, sizeof(struct trapframe));
-//        p->saved_trapframe = *(p->trapframe);
-//            p->alarm_active = 0;
-//            p->prev_a0 = p->trapframe->a0;
-            p->trapframe->epc = (uint64)p->alarm_handler; // jump to handler
-//        p->alarm_left = p->alarm_ticks;        // reset ticks
-//        }
-      }
-    }
-    yield();
+        if (++p->ticks_cnt == p->alarm_ticks) // increase cnt, and check if it reaches the end of period
+        {
+            p->ticks_cnt = 0; // reset
+            p->alarm_active = 1; // active (prevent re-entrant)
+            memmove(&p->saved_trapframe, p->trapframe, sizeof(struct trapframe)); // save current status
+            p->trapframe->epc = (uint64)p->alarm_handler; // jump to handler 
+        } 
+    }  
+    yield(); // let other process be executed
   }
-
-  usertrapret();
+  usertrapret(); // back to user mode (after interrupt or system call)
 }
 
 //

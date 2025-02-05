@@ -109,11 +109,10 @@ struct proc {
   // alarm fields
   int alarm_req;
   int alarm_ticks;
-//  int alarm_left;
   int ticks_cnt;
   uint64 alarm_handler;
   int alarm_active;
   struct trapframe saved_trapframe; // copy of registers before interrupt
-  uint64 prev_a0;
+  uint64 prev_a0; // value a0 before execution (needed to restore)
 };
 
